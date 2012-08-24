@@ -2,123 +2,59 @@ package visual.data;
 
 import java.io.File;
 
-public class DirectoryTree {
-	
-	//The file at the root of this tree
-	private Directory root;
-	
-	//The path of the file at the root of this tree
-	private String rootPath;
-	
-	
-	/**
-	 * Global directory count
-	 */
-	private int globalCount;
+public class DirectoryTree extends AbstractDirectoryTree {
+
+	public DirectoryTree(Node root) {
+		super(root);
+	}
 	
 	public DirectoryTree(String rootPath)
 	{
-		globalCount = 0;
-		this.rootPath = rootPath;
+		super(rootPath);
 	}
 
-	/**
-	 * Construct the tree by beginning at the root Directory and recursively scanning all files and
-	 * subfolders. This method is locking, and should be run in a thread to avoid deadlocks.
-	 */
-	public boolean buildTree() {
-		System.out.println("Attempting to build directory structure");
-		root = new Directory(new File(rootPath));
-		System.out.println("Success. Global count is " + globalCount);
-		
-		return true;
+	@Override
+	public boolean delete(String filePath) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
-	/**
-	 * 
-	 * @author lunch
-	 *
-	 */
-	private class Directory
-	{
-		/**
-		 * The actual file correlating to this directory
-		 */
-		private File root;
+	@Override
+	public void buildTree() {
 		
-		/**
-		 * The files and sub-files in this directory
-		 */
-		private Directory[] files;
-		
-		/**
-		 * The size of this directory tree
-		 */
-		private long size;
-		
-		public Directory(File root)
+		new Thread()
 		{
-			this.root = root;
-			files = null;
-
-			File[] fileList = root.listFiles();
-
-			if (fileList != null) //This happens with some system folders
+			public void run()
 			{
-				/**
-				 * The following lines of code count the number of folders in this sub-directory
-				 */
-				int count = 0;
-				for (int i = 0; i < fileList.length; i++)
-					if (fileList[i].isDirectory())
-					{
-						count++;
-						globalCount++;
-					}
-
-				//Now we know how many subfolders there are
-				files = new Directory[count];
-
-
-				/**
-				 * Now add the folders to the subfolder list
-				 */
-				for (int i = 0; i < count; i++)
-				{
-					if (fileList[i].isDirectory())
-						files[i] = new Directory(fileList[i]);
-
-					size += fileList[i].length();
-				}
+				scan(root);
+				System.out.println("Tree built successfully. Scanned " + fileCount + " files.");
+				built = true;
 			}
-			
-		}
+		}.start();
+	}
+
+	@Override
+	public Node retrieveNode(String nodePath) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public void scan(Node n)
+	{
+		System.out.println("Scanning " + n.getPath());
+		Node[] childNodes = getChildNodes(n);
 		
-		/**
-		 * Returns the root of this directory structure
-		 * @return
-		 */
-		public File getFile()
-		{
-			return root;
-		}
+		//base case
+		if (childNodes == null)
+			fileCount++;
 		
-		/**
-		 * Returns the sub-directory of this directory
-		 * @return
-		 */
-		public Directory[] getSubFiles()
+		else
 		{
-			return files;
-		}
-		
-		/**
-		 * Returns the total size (Files and folders) of this entire directory structure
-		 * @return
-		 */
-		public long getTotalSize()
-		{
-			return size;
+			n.setChildren(childNodes);
+			for (Node node: childNodes)
+				scan(node);
 		}
 	}
+	
+
 }
