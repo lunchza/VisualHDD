@@ -45,6 +45,8 @@ public class Node {
 	{
 		this.path = f.getAbsolutePath();
 		this.name = f.getName();
+		if (name.equals(""))
+			name = path.substring(0, path.length()-1);
 		if (!f.isDirectory())
 			this.size = f.length();
 		else

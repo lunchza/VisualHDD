@@ -3,12 +3,13 @@ package visual.main;
 import java.io.File;
 
 import visual.data.DirectoryTree;
+import visual.data.Node;
 
 public class VisualHDD {
 
 	public VisualHDD()
 	{
-		File f = new File("D:\\");
+		File f = new File("C:\\test");
 		DirectoryTree tree = new DirectoryTree(f.getAbsolutePath());
 		System.out.println("Tree instantiated");
 		tree.buildTree();
@@ -29,7 +30,13 @@ public class VisualHDD {
 		tree.recalculateSizes();
 		System.out.println("Done!");
 		System.out.println("Size recalculation took: " + (System.currentTimeMillis() - calculateTime) + "ms");
-	//	tree.printTree();
+		tree.printTree();
+		System.out.println("\nDeleting node \'test\\Hello\\herp.txt\': ");
+		if (tree.delete("test\\Hello\\herp.txt"))
+			System.out.println("Node deleted successfully");
+		else
+			System.out.println("Could not find node");
+		tree.printTree();
 	}
 	
 	
