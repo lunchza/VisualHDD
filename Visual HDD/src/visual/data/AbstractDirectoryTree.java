@@ -20,7 +20,17 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 	/**
 	 * The total number of files stored in this tree. Does not include directories 
 	 */
-	protected static int fileCount;
+	protected static long fileCount;
+	
+	/**
+	 * The collective size of all files in this tree
+	 */
+	protected long totalSize;
+	
+	/**
+	 * The total time taken to construct this DirectoryTree
+	 */
+	protected long runningTime;
 	
 	/**
 	 * Instantiates the Directory Tree with the specified node as Root. Tree propagation won't occur 
@@ -49,7 +59,8 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 		return built;
 	}
 	
-	public int getNumFiles()
+	@Override
+	public long getNumFiles()
 	{
 		return fileCount;
 	}
@@ -63,7 +74,6 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 
 		if (subFiles != null) //happens with some system folders
 		{
-
 			Node[] nodeList = new Node[subFiles.length];
 
 			for (int i = 0; i < nodeList.length; i++)
@@ -83,12 +93,15 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 		print(root, 0);
 	}
 	
+	/**
+	 * Helper method for printTree()
+	 */
 	private void print(Node n, int depth)
 	{
 		for (int i = 0; i < depth; i++)
 			System.out.print("|-");
 		
-		System.out.println(n.getName());
+		System.out.println(n.getName() + "(" + n.getSize() + " bytes)");
 		
 		
 		if (n.isChildNode()) //base case
@@ -99,5 +112,40 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 			for (Node children: n.getChildren())
 				print(children, depth+1);
 		}
+	}
+	
+	public long getRunningTime()
+	{
+		return runningTime;
+	}
+	
+	/**
+	 * Once the tree structure has been created, the sizes of all directories are recalculated
+	 */
+	public void recalculateSizes()
+	{
+		totalSize = recalculateSize(root);
+		System.out.println("Total size: " + totalSize);
+	}
+	
+	private long recalculateSize(Node n)
+	{
+		long size = n.getSize();
+		
+		//base case
+		if (!n.isChildNode())
+		{
+			Node[] children = n.getChildren();
+			for (Node child: children)
+				size += recalculateSize(child);
+			n.setSize(size);
+		}
+		
+			return size;
+	}
+	
+	public long getTotalSize()
+	{
+		return totalSize;
 	}
 }

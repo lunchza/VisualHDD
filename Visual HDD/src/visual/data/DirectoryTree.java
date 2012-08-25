@@ -1,7 +1,5 @@
 package visual.data;
 
-import java.io.File;
-
 public class DirectoryTree extends AbstractDirectoryTree {
 
 	public DirectoryTree(Node root) {
@@ -26,8 +24,11 @@ public class DirectoryTree extends AbstractDirectoryTree {
 		{
 			public void run()
 			{
+				System.out.println("Building tree...");
+				long startTime = System.currentTimeMillis();
 				scan(root);
-				System.out.println("Tree built successfully. Scanned " + fileCount + " files.");
+				runningTime = System.currentTimeMillis() - startTime;
+				System.out.println("Tree built successfully. Scanned " + fileCount + " files in " + runningTime + "ms.");
 				built = true;
 			}
 		}.start();
@@ -39,22 +40,23 @@ public class DirectoryTree extends AbstractDirectoryTree {
 		return null;
 	}
 	
-	public void scan(Node n)
+	private void scan(Node n)
 	{
-		System.out.println("Scanning " + n.getPath());
+		//System.out.println("Scanning " + n.getPath());
 		Node[] childNodes = getChildNodes(n);
+		totalSize += n.getSize();
 		
 		//base case
 		if (childNodes == null)
+		{
 			fileCount++;
+		}
 		
 		else
 		{
 			n.setChildren(childNodes);
 			for (Node node: childNodes)
-				scan(node);
+					scan(node);
 		}
 	}
-	
-
 }

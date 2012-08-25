@@ -39,5 +39,11 @@ public interface IDirectoryTree {
 	 * Attempts to print a crude representation of this tree to the console window
 	 */
 	void printTree();
+	
+	/**
+	 * Returns the number of files contained in this Directory Tree
+	 * @return
+	 */
+	long getNumFiles();
 
 }

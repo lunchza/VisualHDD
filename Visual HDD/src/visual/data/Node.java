@@ -45,7 +45,10 @@ public class Node {
 	{
 		this.path = f.getAbsolutePath();
 		this.name = f.getName();
-		this.size = f.length();
+		if (!f.isDirectory())
+			this.size = f.length();
+		else
+			this.size = 0;
 	}
 	
 	
@@ -84,5 +87,15 @@ public class Node {
 	public String getName()
 	{
 		return name;
+	}
+	
+	public long getSize()
+	{
+		return size;
+	}
+	
+	public void setSize(long s)
+	{
+		size = s;
 	}
 }
