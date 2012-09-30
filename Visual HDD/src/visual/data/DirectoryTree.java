@@ -43,11 +43,9 @@ public class DirectoryTree extends AbstractDirectoryTree {
 		{
 			public void run()
 			{
-				System.out.println("Building tree...");
 				long startTime = System.currentTimeMillis();
 				scan(root);
 				runningTime = System.currentTimeMillis() - startTime;
-				System.out.println("Tree built successfully. Scanned " + fileCount + " files in " + runningTime + "ms.");
 				built = true;
 			}
 		}.start();

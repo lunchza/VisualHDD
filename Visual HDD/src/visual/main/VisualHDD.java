@@ -2,47 +2,85 @@ package visual.main;
 
 import java.io.File;
 
+import javax.swing.JOptionPane;
+
 import visual.data.DirectoryTree;
-import visual.data.Node;
+import visual.gui.ProgramWindow;
 
 public class VisualHDD {
+	
+	/**
+	 * A tree is constructed for every available partition on the user's filesystem. The summary of total disk usage is constructed
+	 * from the concatenation of the sizes of these individual trees
+	 * 
+	 * e.g A user has 2 partitions, C: and D:, with sizes 150gb and 200gb respectively. The program constructs 2 trees for these partitions.
+	 * with the summary consisting of a pie-graph with 2 slices, C: (43%) and D: (57%)
+	 */
+	private DirectoryTree[] partitionTrees;
+	
+	//singleton
+	private static VisualHDD visualHDD;
+	
+	/**
+	 * Program frame
+	 */
+	ProgramWindow frame;
+	
+	/**
+	 * Program version
+	 */
+	public static final String VERSION = "0.1";
 
-	public VisualHDD()
+	private VisualHDD()
 	{
-		File f = new File("C:\\test");
-		DirectoryTree tree = new DirectoryTree(f.getAbsolutePath());
-		System.out.println("Tree instantiated");
-		tree.buildTree();
-		while(!tree.isBuilt())
+		File[] roots = getAvailableSystemPartitions(); //get all top-level folders/partitions
+		partitionTrees = new DirectoryTree[roots.length]; //need 1 DirectoryTree for each partition
+		
+		for (int i = 0; i < partitionTrees.length; i++)
 		{
-			double percentage = tree.getTotalSize() / (double)f.getTotalSpace();
-			System.out.println((int)(percentage*100) + "%  complete.");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			partitionTrees[i] = new DirectoryTree(roots[i].getAbsolutePath());
 		}
-		//tree.printTree();
-		long calculateTime = System.currentTimeMillis();
-		System.out.print("\nRecalculating sizes...");
-		tree.recalculateSizes();
-		System.out.println("Done!");
-		System.out.println("Size recalculation took: " + (System.currentTimeMillis() - calculateTime) + "ms");
-		tree.printTree();
-		System.out.println("\nDeleting node \'test\\Hello\\herp.txt\': ");
-		if (tree.delete("test\\Hello\\herp.txt"))
-			System.out.println("Node deleted successfully");
-		else
-			System.out.println("Could not find node");
-		tree.printTree();
+		
+		frame = new ProgramWindow(roots);
+		frame.setVisible(true);		
 	}
 	
 	
 	public static void main(String[] args) {
-		new VisualHDD();
-
+		getInstance();
 	}
-
+	
+	/**
+	 * Returns a list of available partitions on this system
+	 * @return
+	 */
+	private File[] getAvailableSystemPartitions()
+	{
+		return File.listRoots();
+	}
+	
+	//singleton
+	public static VisualHDD getInstance()
+	{
+		if (visualHDD == null)
+			visualHDD = new VisualHDD();
+		
+		return visualHDD;
+	}
+	
+	/**
+	 * Starts scanning the drive corresponding to the DirectoryTree at the specified index. If the index is -1, every partition will be
+	 * scanned in order to create the overview
+	 * @param index
+	 */
+	public void scan(int index)
+	{
+		if (frame.isScanning())
+		{
+			JOptionPane.showMessageDialog(null, "Can't interrupt scanning atm, fix soon etc");
+			return;
+		}
+		frame.setScanStatus(true);
+		partitionTrees[index].buildTree();
+	}
 }
