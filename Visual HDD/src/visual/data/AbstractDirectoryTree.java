@@ -44,7 +44,7 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 	}
 	
 	/**
-	 * Instantiates a Directory Tree with rootPath being the path of the root Node. 
+	 * Instantiates a Directory Tree with root Path being the path of the root Node. 
 	 * Tree propagation won't occur until the build() method is called
 	 * @param root
 	 */
@@ -125,7 +125,7 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 	public void recalculateSizes()
 	{
 		totalSize = recalculateSize(root);
-		System.out.println("Total size: " + totalSize);
+		System.out.println("Total size: " + totalSize);		
 	}
 	
 	private long recalculateSize(Node n)

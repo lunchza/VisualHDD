@@ -1,8 +1,14 @@
 package visual.gui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+
+import visual.gui.graph.DefaultGraphPanel;
+import visual.main.VisualHDD;
 
 /**
  * Menu bar for the program frame. Menu structure is as follows:
@@ -25,7 +31,7 @@ public class MenuBar extends JMenuBar {
 	/**
 	 * MenuItem components
 	 */
-	private JMenuItem rescanMenuItem, exitMenuItem, configurationMenuItem, quickHelpMenuItem, aboutMenuItem;
+	private JMenuItem rescanMenuItem, exitMenuItem, configurationMenuItem, quickHelpMenuItem, aboutMenuItem, stopMenuItem;
 	
 	public MenuBar()
 	{
@@ -37,9 +43,38 @@ public class MenuBar extends JMenuBar {
 	 * Initialises all menu items and sets up appropriate listeners
 	 */
 	private void init()
-	{
-		rescanMenuItem = new JMenuItem("Rescan");
+	{		
+		rescanMenuItem = new JMenuItem("Scan");
+		rescanMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {				
+				if(InformationBar.getPartition()!=-1){
+					setVisible(false);
+					setVisible(true);
+				}
+			}
+		});
+		
+		stopMenuItem = new JMenuItem("Stop Scan");
+		stopMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				VisualHDD.stopScan(InformationBar.getPartition());	
+				setVisible(false);
+				setVisible(true);
+			}
+		});	
+		
 		exitMenuItem = new JMenuItem("Exit");
+		exitMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.exit(0);
+			}
+		});
 		
 		configurationMenuItem = new JMenuItem("Configuration");
 		
@@ -63,8 +98,9 @@ public class MenuBar extends JMenuBar {
 	  * 	->About
 	 */
 	private void buildMenu()
-	{
+	{		
 		fileMenu.add(rescanMenuItem);
+		fileMenu.add(stopMenuItem);
 		fileMenu.add(exitMenuItem);
 		
 		optionsMenu.add(configurationMenuItem);

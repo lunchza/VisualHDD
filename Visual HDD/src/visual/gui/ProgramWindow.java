@@ -1,13 +1,16 @@
 package visual.gui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import visual.data.Node;
 import visual.gui.graph.DefaultGraphPanel;
-import visual.main.Status;
 import visual.main.VisualHDD;
 
 /**
@@ -15,33 +18,14 @@ import visual.main.VisualHDD;
  * @author Peter Pretorius
  */
 public class ProgramWindow extends JFrame {
-	
-	/**
-	 * MenuBar for this frame
-	 */
 	private MenuBar menuBar;
-	
-	/**
-	 * Status bar for this frame
-	 */
-	private static JStatusBar statusBar;
-	
-	/**
-	 * Partition list panel
-	 */
 	private JPanel partitionPanel;
-	
-	/**
-	 * Graph panel
-	 */
 	private JPanel graphPanel;
-	
-	//keeps track of whether or not a scan is currently in progress
-	private boolean scanning;
-
-	/**
-	 * 
-	 */
+	private static boolean scanning; //keeps track of whether or not a scan is currently in progress
+	private static boolean canceled = false;
+	private JButton infoPanel;
+	private int scanPartition = 0;
+	private Node currentNode;
 	private static final long serialVersionUID = 1L;
 	
 	public ProgramWindow(File[] partitions)
@@ -50,7 +34,7 @@ public class ProgramWindow extends JFrame {
 		setSize(800, 600); //fixed frame size
 		setResizable(false); //non-resizable
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //quit on close
-		setLayout(new BorderLayout());
+		setLayout(new BorderLayout());		
 		setLocationRelativeTo(null); //center frame
 		
 		init(partitions);
@@ -58,51 +42,91 @@ public class ProgramWindow extends JFrame {
 	
 	/**
 	 * Initialise frame by adding all sub-components, status bar and menu bar
-	 * Also constructs the partition panel based on the partitions found, and instantiates a DefaultGraphPanel as a placeholder
+	 * Also constructs the partition panel based on the partitions found, and instantiates the DefaultGraphPanel
 	 */
 	private void init(File[] partitions)
 	{
-		menuBar = new MenuBar(); //initialize menuBar
-		setJMenuBar(menuBar); //set menuBar
+		menuBar = new MenuBar();
+		setJMenuBar(menuBar);
+		menuBar.addComponentListener(new ComponentListener() {		
+			
+			public void componentShown(ComponentEvent e) {}			
+			public void componentResized(ComponentEvent e) {}			
+			public void componentMoved(ComponentEvent e) {}			
+			public void componentHidden(ComponentEvent e) {					
+				if(scanning!=true && canceled==false){					
+					((InformationBar) infoPanel).update();
+					((InformationBar) infoPanel).actionPerformed();
+					((DefaultGraphPanel) graphPanel).update(currentNode);
+				}				
+			}
+		});
 		
-		graphPanel = new DefaultGraphPanel(); //graphPanel is empty for now
+		graphPanel = new DefaultGraphPanel(partitions, currentNode);
 		add(graphPanel, BorderLayout.CENTER);
+		((DefaultGraphPanel) graphPanel).update(currentNode);
+		
+		infoPanel = new InformationBar();
+		add(infoPanel, BorderLayout.NORTH);
 		
 		partitionPanel = new PartitionSelectionPanel(partitions);
-		add(partitionPanel, BorderLayout.WEST);
+		partitionPanel.addComponentListener(new ComponentListener() {		
+			
+			public void componentShown(ComponentEvent e) {}			
+			public void componentResized(ComponentEvent e) {}			
+			public void componentMoved(ComponentEvent e) {}			
+			public void componentHidden(ComponentEvent e) {				
+				if(scanning!=true){					
+					((InformationBar) infoPanel).update();
+					((DefaultGraphPanel) graphPanel).update(currentNode);
+				}
+			}
+		});
 		
-		statusBar = new JStatusBar(JStatusBar.LEFT_ORIENTATION);
-		add(statusBar, BorderLayout.SOUTH);
-		updateStatus(Status.Program_ready);
-		
+		add(partitionPanel, BorderLayout.WEST);		
+			
 		scanning = false;
 	}
 	
-	/**
-	 * Updates the current status displayed in the status bar
-	 */
-	public static void updateStatus(Status s)
-	{
-		statusBar.setStatus(s.name().replace("_", " "));
-	}
-
 	public void setScanStatus(boolean b) {
 		if (scanning = b == true)
+		{			
+			scanning = true;			
+		}
+		
+		else if(scanning = b == false && canceled == true)
 		{
-			updateStatus(Status.Scanning_drive);
-			scanning = true;
-			((DefaultGraphPanel) graphPanel).showScanningAnimation();
+			scanning = false;
+			((InformationBar) infoPanel).update();
+			((DefaultGraphPanel) graphPanel).update(currentNode);			
 		}
 		
 		else
-		{
-			scanning = false;
+		{			
+			scanning = false;			
+			currentNode = ((InformationBar) infoPanel).update();
+			((DefaultGraphPanel) graphPanel).update(currentNode);
 		}
 	}
 	
-	public boolean isScanning()
+	public void setCanceled(boolean value){		
+		canceled = value;
+		
+		if(canceled==true)			
+			((InformationBar) infoPanel).update();		
+	}
+	
+	public void setCurrentNode(Node node){
+		currentNode = node;
+	}
+	
+	public static boolean isScanning()
 	{
 		return scanning;
+	}
+
+	public static boolean getCanceled() {		
+		return canceled;
 	}
 	
 }

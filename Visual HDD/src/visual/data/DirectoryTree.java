@@ -1,9 +1,12 @@
 package visual.data;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class DirectoryTree extends AbstractDirectoryTree {
-
+	
+	Thread scan;
+	
 	public DirectoryTree(Node root) {
 		super(root);
 	}
@@ -19,36 +22,48 @@ public class DirectoryTree extends AbstractDirectoryTree {
 		Node parentOfTargetNode = retrieveNode(filePath.substring(0, filePath.lastIndexOf("\\")));
 		
 		Node[] childNodes = parentOfTargetNode.getChildren();
-		ArrayList<Node> nodeList = new ArrayList<Node>();
+		ArrayList<Node> nodeList = new ArrayList<Node>(); //Build a list of all nodes that are siblings of the parent node
 		for (Node n: childNodes)
 			nodeList.add(n);
 		
-		if(nodeList.remove(targetNode))
+		if(nodeList.remove(targetNode)) //remove the target node from the list of siblings
 		{
 			Node[] newNodeList = new Node[nodeList.size()];
 			for (int i = 0; i < nodeList.size(); i++)
 				newNodeList[i] = nodeList.get(i);
 				
-			parentOfTargetNode.setChildren(newNodeList);
+			parentOfTargetNode.setChildren(newNodeList); //parent now has the same children as before, minus the target node
+			File f = new File(targetNode.getPath()); //Create a file object pointing to the specified node
+				f.delete();
+				/**
+				 * TEST CODE
+				 */
+				System.out.println("Deleted " + targetNode.getPath());
 			return true;
 		}
 		return false;
-		
 	}
 
 	@Override
 	public void buildTree() {
+		if (scan == null)
+			scan = new ScanTask();
 		
-		new Thread()
+		//scan has been done previously. "reset" the tree and rebuild from scratch
+		else
 		{
-			public void run()
-			{
-				long startTime = System.currentTimeMillis();
-				scan(root);
-				runningTime = System.currentTimeMillis() - startTime;
-				built = true;
-			}
-		}.start();
+			root.setChildren(null);
+			root.setSize(0); //this will be corrected with the size is recalculated
+			totalSize = fileCount = runningTime = 0;
+			built = false;
+			scan = new ScanTask();
+		}
+		scan.start();
+	}
+	
+	public void stopBuild(){		
+		scan.interrupt();
+		built=true;		
 	}
 
 	@Override
@@ -62,7 +77,11 @@ public class DirectoryTree extends AbstractDirectoryTree {
 	 */
 	private Node retrieveNode(Node current, String nodePath)
 	{
-		if (!nodePath.contains("\\"))
+		if(nodePath.equals("")){
+			return root;
+		}
+		
+		else if (!nodePath.contains("\\"))
 		{
 			Node[] children = current.getChildren();
 			if (children != null)
@@ -88,7 +107,6 @@ public class DirectoryTree extends AbstractDirectoryTree {
 			}
 			
 		}
-		
 		return null;
 
 	}
@@ -110,6 +128,18 @@ public class DirectoryTree extends AbstractDirectoryTree {
 			n.setChildren(childNodes);
 			for (Node node: childNodes)
 					scan(node);
+		}
+	}
+	
+	private class ScanTask extends Thread
+	{
+		public void run()
+		{
+			long startTime = System.currentTimeMillis();
+			scan(root);
+			runningTime = System.currentTimeMillis() - startTime;
+			built = true;
+			recalculateSizes();
 		}
 	}
 }

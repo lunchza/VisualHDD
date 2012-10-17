@@ -1,45 +1,127 @@
 package visual.gui.graph;
 
-import java.awt.Graphics;
+import java.io.File;
 
-import javax.swing.JLabel;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-public class DefaultGraphPanel extends JPanel {
-	
-	/**
-	 * 
-	 */
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.data.general.DefaultPieDataset;
+
+import visual.data.Node;
+import visual.gui.PieChart;
+
+/**
+ * This class handles the creation and handling of the charts representing the file scans
+ * @author Calvin Nefdt - 207524322
+ *
+ */
+public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 	private static final long serialVersionUID = 1L;
 	
-	//while scanning, an image is displayed that lets the user know that a scan is in progress
-	private boolean scanning;
+	DefaultPieDataset data;
+	Node parentNode;
+	File[] partitionInfo;
+	ChartPanel chart;
 	
 	/**
-	 * Placeholder label
+	 * Sets up the data for needed to generate a Piechart 
+	 * @param fileInfo The data representing the file system partitions
+	 * @param node The parent node that the current view is looking at
 	 */
-	private JLabel placeHolder;
+	public DefaultGraphPanel(File[] fileInfo, Node node){
+		parentNode = node;
+		partitionInfo = fileInfo;
+		drawGraph();
+	}
 	
-	public DefaultGraphPanel()
-	{
-		scanning = false;
+	/**
+	 * Draw's the Pie chart
+	 */
+	public void drawGraph(){
+		if(parentNode == null){
+			data = new DefaultPieDataset();
+			
+			for(int i=0; i<partitionInfo.length; i++){
+				data.setValue(partitionInfo[i].getAbsolutePath(),partitionInfo[i].getTotalSpace());
+			}
+			
+			PieChart pi = new PieChart("Overview", data);
+			chart = pi.createChart();
+		}
 		
-		placeHolder = new JLabel("Please select a partition on the left to start scanning");
-		add(placeHolder);
+		else try{
+			data = new DefaultPieDataset();
+			Node[] child = parentNode.getChildren();
+			
+			for(int i=0; i<child.length; i++){
+				data.setValue(child[i].getName(), child[i].getSize());
+			}
+			
+			PieChart pi = new PieChart(parentNode.getPath(), data);
+			chart = pi.createChart();
+		}
+		catch(NullPointerException e){
+			JOptionPane.showMessageDialog(new JFrame(), "The element you have clicked on is not a valid area to scan further." +
+					" Some Possibilities as to why : \n" +
+					" - The location is a file and not a directory.\n" +
+					" - The area you have clicked on is not a valid scanning area.", "Bottom level", JOptionPane.ERROR_MESSAGE);
+		}
+		
+		chart.setPopupMenu(null);
+		chart.addChartMouseListener(this);
+		removeAll();
+		add(chart);
 	}
 	
-	public void showScanningAnimation()
-	{
-		scanning = true;
-		placeHolder.setText("Scan in progress");
-		repaint();
+	/**
+	 * Update the pie chart as necessary for redrawing
+	 * @param node The parent Node that is being viewed;
+	 */
+	public void update(Node node){
+		parentNode = node;
+		drawGraph();
+		revalidate();
 	}
 	
-
-	public void paintComponent(Graphics g)
-	{
-		//super.paintComponents(g);
-
+	@Override
+	public void chartMouseClicked(ChartMouseEvent event) {
+		if(parentNode!=null){
+			try{
+				boolean updated = false;
+				ChartEntity chartentity = event.getEntity();
+				Node[] tempNode = parentNode.getChildren();
+		
+				String result = chartentity.getToolTipText();
+				int cutOff = result.lastIndexOf(58);
+				result = result.substring(0, cutOff);
+				
+				for(int i=0;i<tempNode.length; i++)
+					if(result.equals(tempNode[i].getName()) && !tempNode[i].isChildNode()){
+						update(tempNode[i]);
+						updated = true;
+						break;
+					}
+				if(!updated)
+					throw new NullPointerException();
+			}
+			catch(NullPointerException e){
+				JOptionPane.showMessageDialog(new JFrame(), "The element you have clicked on is not a valid area to scan further." +
+															" Some Possibilities as to why : \n" +
+															" - The location is a file and not a directory.\n" +
+															" - The area you have clicked on is not a valid scanning area.", "Bottom level", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		else{
+			
+		}
 	}
 
+	@Override
+	public void chartMouseMoved(ChartMouseEvent arg0){
+	}
 }

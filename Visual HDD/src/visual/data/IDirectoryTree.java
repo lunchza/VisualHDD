@@ -10,7 +10,7 @@ public interface IDirectoryTree {
 	boolean delete(String filePath);
 	
 	/**
-	 * Constructs the tree, beginning with the root node and recursively creating new nodes for 
+	 * Constructs a tree, beginning with the root and recursively creating new nodes for 
 	 * sub-files and directories. This is a depth-first search and runs in its own thread. 
 	 */
 	void buildTree();
@@ -45,5 +45,4 @@ public interface IDirectoryTree {
 	 * @return
 	 */
 	long getNumFiles();
-
 }
