@@ -1,6 +1,8 @@
 package visual.data;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class DirectoryTree extends AbstractDirectoryTree {
@@ -34,15 +36,32 @@ public class DirectoryTree extends AbstractDirectoryTree {
 				
 			parentOfTargetNode.setChildren(newNodeList); //parent now has the same children as before, minus the target node
 			File f = new File(targetNode.getPath()); //Create a file object pointing to the specified node
-				f.delete();
+			if (f.exists())
+			{
+				delete(f);
+				System.out.println("Deleted " + targetNode.getPath());
+
+			}
+			else
+				System.out.println("Cannot find file " + f.getAbsolutePath());
 				/**
 				 * TEST CODE
 				 */
-				System.out.println("Deleted " + targetNode.getPath());
 			return true;
 		}
 		return false;
 	}
+	
+	void delete(File f) {
+		  if (f.isDirectory()) {
+		    for (File c : f.listFiles())
+		    {
+		      delete(c);
+		    }
+		  }
+		    f.delete();
+		}
+
 
 	@Override
 	public void buildTree() {

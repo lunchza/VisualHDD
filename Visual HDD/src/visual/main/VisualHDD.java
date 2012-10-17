@@ -2,6 +2,8 @@ package visual.main;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -23,6 +25,11 @@ public class VisualHDD {
 	private static VisualHDD visualHDD;
 	
 	/**
+	 * This arraylist maps partition identifiers to an integer index
+	 */
+	private static ArrayList<String> partitionMap = new ArrayList<String>();
+	
+	/**
 	 * Program frame
 	 */
 	static ProgramWindow frame;
@@ -41,6 +48,7 @@ public class VisualHDD {
 		for (int i = 0; i < partitionTrees.length; i++)
 		{
 			partitionTrees[i] = new DirectoryTree(roots[i].getAbsolutePath());
+			partitionMap.add(roots[i].getAbsolutePath() + i);
 		}
 		
 		frame = new ProgramWindow(roots);
@@ -126,5 +134,13 @@ public class VisualHDD {
 	
 	public static DirectoryTree getTree(int index){
 		return partitionTrees[index];
+	}
+	
+	public static int getTreeIndex(String partitionID)
+	{
+		for (String s: partitionMap)
+			if (s.startsWith(partitionID))
+				return Integer.parseInt(""+s.charAt(s.length()-1));
+		return -1;
 	}
 }

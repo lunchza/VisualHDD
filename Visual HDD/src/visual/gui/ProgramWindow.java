@@ -2,6 +2,8 @@ package visual.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
@@ -82,8 +84,15 @@ public class ProgramWindow extends JFrame {
 		northPanel.setPreferredSize(new Dimension(640, 100));
 		northPanel.setLayout(null);
 		
-		backButton = new JButton(new ImageIcon("back.gif"));
+		backButton = new JButton(new ImageIcon("back.gif"));		
 		backButton.setBounds(0, 0, 95, 95);
+		backButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				((DefaultGraphPanel) graphPanel).back();
+			}
+		});		
 		
 		infoPanel = new InformationBar();
 		infoPanel.setBounds(100, 0, 680, 100);

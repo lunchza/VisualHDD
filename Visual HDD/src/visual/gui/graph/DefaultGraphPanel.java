@@ -1,6 +1,9 @@
 package visual.gui.graph;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -14,8 +17,10 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.data.general.DefaultPieDataset;
 
+import visual.data.DirectoryTree;
 import visual.data.Node;
 import visual.gui.PieChart;
+import visual.main.VisualHDD;
 
 /**
  * This class handles the creation and handling of the charts representing the file scans
@@ -26,16 +31,34 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 	private static final long serialVersionUID = 1L;
 	
 	DefaultPieDataset data;
-	Node parentNode;
+	Node parentNode;	
 	File[] partitionInfo;
 	ChartPanel chart;
+	ArrayList<Node> trace = new ArrayList<Node>(0);
 	
+	/**
+	 * Keeps track of which slice the mouse is currently placed on
+	 */
+	private Object hoverSlice;
+	
+	private JPopupMenu popup;
+	
+	/**
+	 * Buttons for the context menu
+	 */
+	private JMenuItem backMenuItem, deleteMenuItem;
+	
+	/**
+	 * Keeps track of the current browsed-to path
+	 */
+	private String path;
+		
 	/**
 	 * Sets up the data for needed to generate a Piechart 
 	 * @param fileInfo The data representing the file system partitions
 	 * @param node The parent node that the current view is looking at
 	 */
-	public DefaultGraphPanel(File[] fileInfo, Node node){
+	public DefaultGraphPanel(File[] fileInfo, Node node){		
 		parentNode = node;
 		partitionInfo = fileInfo;
 		drawGraph();
@@ -75,31 +98,66 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 		}
 		removeAll();
 		
-		JPopupMenu popup = chart.getPopupMenu();
+		popup = chart.getPopupMenu();
 		popup.removeAll();
-		JMenuItem menu;
-		menu = new JMenuItem("Back");
-		popup.add(menu);
-		menu = new JMenuItem("Delete");
-		popup.add(menu);
+		backMenuItem = new JMenuItem("Back");
+		backMenuItem.addActionListener(new ContextMenuListener());
+		popup.add(backMenuItem);
+		deleteMenuItem = new JMenuItem("Delete");
+		deleteMenuItem.addActionListener(new ContextMenuListener());
+		popup.add(deleteMenuItem);
+		chart.setPopupMenu(popup);
 		
 //		menu.addActionListener(new ActionListener(){
 //			  public void actionPerformed(ActionEvent e){}
 //			  });
 		
-		chart.setPopupMenu(popup);
 		chart.addChartMouseListener(this);
 		add(chart);
 	}
 	
-	/**
-	 * Update the pie chart as necessary for redrawing
-	 * @param node The parent Node that is being viewed;
-	 */
-	public void update(Node node){
-		parentNode = node;
-		drawGraph();
-		revalidate();
+	 /**
+     * Update the pie chart as necessary for redrawing
+     * @param node The parent Node that is being viewed;
+     */
+	  public void update(Node node){         
+          if(trace.size() >0 && parentNode != trace.get(trace.size()-1)){
+                  if(node != trace.get(trace.size()-1)){
+                          trace.add(parentNode);
+                  }
+          }
+          else if(trace.size()==0)                       
+                  trace.add(parentNode);
+         
+                 
+          parentNode = node;
+          if (node != null)
+        	  path = node.getPath();
+          drawGraph();
+          revalidate();
+  }
+	
+	
+	public Node getParentNode(){
+		return trace.get(trace.size()-1);
+	}
+	
+	public void removeParentNode(){
+		
+		trace.remove(trace.size()-1);
+		
+	}
+	
+	public int getTraceSize(){
+		return trace.size();
+	}
+	
+	public void back()
+	{
+		if(getTraceSize()!=0){					
+			update(getParentNode());					
+			removeParentNode();
+		}
 	}
 	
 	@Override
@@ -137,5 +195,31 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 
 	@Override
 	public void chartMouseMoved(ChartMouseEvent arg0){
+		hoverSlice = arg0.getEntity();
+	}
+	
+	private class ContextMenuListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			if (arg0.getSource() == backMenuItem)
+			{
+				back();
+			}
+			
+			else if (arg0.getSource() == deleteMenuItem)
+			{
+				String s = hoverSlice.toString();
+				String nodePath = path + "\\" + s.substring(s.indexOf("(")+1, s.lastIndexOf(")"));
+				int index = VisualHDD.getTreeIndex(nodePath.substring(0, 2));
+				DirectoryTree tree = VisualHDD.getTree(index);
+				if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete " + nodePath + "?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION)
+				{
+					tree.delete(nodePath);
+					update(parentNode);
+				}
+			}
+		}
 	}
 }
