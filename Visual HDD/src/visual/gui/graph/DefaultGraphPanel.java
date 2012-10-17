@@ -31,16 +31,26 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 	private static final long serialVersionUID = 1L;
 	
 	DefaultPieDataset data;
-	Node parentNode;	
+	
+	Node parentNode;
+	
 	File[] partitionInfo;
+	
 	ChartPanel chart;
+	
+	 /**
+     * List of all parent nodes to allow for back tracking through the DirectoryTree
+     */
 	ArrayList<Node> trace = new ArrayList<Node>(0);
 	
 	/**
-	 * Keeps track of which slice the mouse is currently placed on
+	 * Keeps track of which pie slice the mouse is currently placed on
 	 */
 	private Object hoverSlice;
 	
+	/**
+	 * Context menu for the graph
+	 */
 	private JPopupMenu popup;
 	
 	/**
@@ -65,7 +75,7 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 	}
 	
 	/**
-	 * Draw's the Pie chart
+	 * Draws the Pie chart
 	 */
 	public void drawGraph(){
 		if(parentNode == null){
@@ -142,16 +152,26 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 		return trace.get(trace.size()-1);
 	}
 	
+	/**
+     * Removes the last parent node from the trace list thus moving one level higher
+     */
 	public void removeParentNode(){
 		
 		trace.remove(trace.size()-1);
 		
 	}
 	
+	  /**
+     * Returns the number of parent nodes on the trace list
+     * @return
+     */
 	public int getTraceSize(){
 		return trace.size();
 	}
 	
+	/**
+	 * Takes the current view back one tier i.e to the parent of the current node
+	 */
 	public void back()
 	{
 		if(getTraceSize()!=0){					
@@ -198,26 +218,32 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 		hoverSlice = arg0.getEntity();
 	}
 	
+	/**
+	 * The ContextMenuListener is responsible for dealing with clicks on context menu items. It is a simple extension of the ActionListener
+	 * class and must be registered on any components present in the context menu
+	 * @author Peter Pretorius
+	 *
+	 */
 	private class ContextMenuListener implements ActionListener
 	{
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			if (arg0.getSource() == backMenuItem)
+			if (arg0.getSource() == backMenuItem) //back button clicked
 			{
 				back();
 			}
 			
-			else if (arg0.getSource() == deleteMenuItem)
+			else if (arg0.getSource() == deleteMenuItem) //delete button clicked
 			{
-				String s = hoverSlice.toString();
-				String nodePath = path + "\\" + s.substring(s.indexOf("(")+1, s.lastIndexOf(")"));
-				int index = VisualHDD.getTreeIndex(nodePath.substring(0, 2));
-				DirectoryTree tree = VisualHDD.getTree(index);
-				if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete " + nodePath + "?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION)
+				String s = hoverSlice.toString(); //get info from the slice that was clicked
+				String nodePath = path + "\\" + s.substring(s.indexOf("(")+1, s.lastIndexOf(")")); //concatenate parent path and the node name(relative path) to get the complete file path
+				int index = VisualHDD.getTreeIndex(nodePath.substring(0, 2)); //ask VisualHDD for the index of the DirectoryTree that contains the node with the abobe path
+				DirectoryTree tree = VisualHDD.getTree(index); //ask VisualHDD for the tree corresponding with the index above
+				if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete " + nodePath + "?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) //user confirmation
 				{
-					tree.delete(nodePath);
-					update(parentNode);
+					tree.delete(nodePath); //let the tree delete the node and file
+					update(parentNode); //update the graph to reflect the change
 				}
 			}
 		}

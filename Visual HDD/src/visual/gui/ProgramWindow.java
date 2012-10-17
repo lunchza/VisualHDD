@@ -23,13 +23,21 @@ import visual.main.VisualHDD;
  */
 public class ProgramWindow extends JFrame {
 	private MenuBar menuBar;
+	
 	private JPanel partitionPanel;
+	
 	private JPanel graphPanel;
+	
 	private static boolean scanning; //keeps track of whether or not a scan is currently in progress
-	private static boolean canceled = false;
+	
+	private static boolean canceled = false; //keeps track of whether or not a scan has been interrupted
+	
 	private JButton infoPanel;
+	
 	private JButton backButton;
+	
 	private Node currentNode;
+	
 	private static final long serialVersionUID = 1L;
 	
 	public ProgramWindow(File[] partitions)
@@ -123,8 +131,6 @@ public class ProgramWindow extends JFrame {
 		
 		add(partitionPanel, BorderLayout.WEST);		
 		
-	
-		
 		scanning = false;
 	}
 	
@@ -163,11 +169,19 @@ public class ProgramWindow extends JFrame {
 		currentNode = node;
 	}
 	
+	/**
+	 * Determines whether or not a scan is currently in progress
+	 * @return
+	 */
 	public static boolean isScanning()
 	{
 		return scanning;
 	}
 
+	/**
+	 * Returns true if the scanning process was interrupted
+	 * @return
+	 */
 	public static boolean getCanceled() {		
 		return canceled;
 	}

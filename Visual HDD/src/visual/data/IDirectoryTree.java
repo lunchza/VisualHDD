@@ -3,7 +3,7 @@ package visual.data;
 public interface IDirectoryTree {
 	
 	/**
-	 * Deletes the Node with path filePath. 
+	 * Deletes the Node with path filePath. Note that this does not ask for confirmation and will shift-delete (i.e permant deletion) files
 	 * @param filePath The absolute path of the file that is to be deleted
 	 * @return true if the node was successfully deleted, false otherwise
 	 */

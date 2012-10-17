@@ -2,16 +2,16 @@ package visual.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
-import visual.gui.graph.DefaultGraphPanel;
 import visual.main.VisualHDD;
 
 /**
- * Menu bar for the program frame. Menu structure is as follows:
+ * Menu bar for the program frame
  * 
  * @author Peter Pretorius
  *
@@ -79,7 +79,22 @@ public class MenuBar extends JMenuBar {
 		configurationMenuItem = new JMenuItem("Configuration");
 		
 		quickHelpMenuItem = new JMenuItem("Quick Help");
+		quickHelpMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				DisposableReadmeFrame frame = new DisposableReadmeFrame();
+			}
+		});
+		
 		aboutMenuItem = new JMenuItem("About");
+		aboutMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JOptionPane.showMessageDialog(null, "VisualHDD v" + VisualHDD.VERSION + "\n\nCreated by\n\t\t-Calvin Nefdt\n\t\t-Peter Pretorius\n\t\t-Darren Osterloh\n\t\t-Tristan Goring\n\t\t-Sanchia Sukraj\n\n(c) COMP301 2012");
+			}
+		});
 		
 		fileMenu = new JMenu("File");
 		optionsMenu = new JMenu("Options");
@@ -112,4 +127,61 @@ public class MenuBar extends JMenuBar {
 		add(optionsMenu);
 		add(helpMenu);
 	}
+	
+	/**
+	 * Constructs a disposable frame for displaying help information. This frame has a one-time use, it is destoroyed when closed
+	 * @return
+	 */
+	private class DisposableReadmeFrame extends JFrame
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		JTextArea textArea;
+
+		public DisposableReadmeFrame()
+		{
+			super("Quick help");
+			setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			setResizable(false);
+			setSize(800, 200);
+			setLocationRelativeTo(null);
+
+		
+			textArea = new JTextArea();;
+			textArea.setWrapStyleWord(true);
+			
+			loadReadme();
+			add(new JScrollPane(textArea));
+			
+			setVisible(true);
+		}
+		
+		/**Loads the readme.txt file and puts its contents into 'area', line-by-line
+		 * 
+		 */
+		private void loadReadme()
+		{
+
+			Scanner sc = null;
+			File f = null;
+			try {
+				f = new File("Readme.txt");
+				sc = new Scanner(f);
+
+			} catch (FileNotFoundException e) {
+				JOptionPane.showMessageDialog(null, "Unable to locate readme.txt!");
+				dispose();
+				setVisible(false);
+			} 
+
+			if(f.exists())
+				while(sc.hasNext())
+				{
+					textArea.setText(textArea.getText() + sc.nextLine() + "\n");
+				}
+		}
+	}	
+
 }

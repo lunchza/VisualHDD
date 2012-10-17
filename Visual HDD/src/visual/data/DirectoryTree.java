@@ -1,13 +1,12 @@
 package visual.data;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class DirectoryTree extends AbstractDirectoryTree {
 	
-	Thread scan;
+	//The scan task associated with this DirectoryTree
+	private Thread scan;
 	
 	public DirectoryTree(Node root) {
 		super(root);
@@ -20,8 +19,10 @@ public class DirectoryTree extends AbstractDirectoryTree {
 
 	@Override
 	public boolean delete(String filePath) {
-		Node targetNode = retrieveNode(filePath);
-		Node parentOfTargetNode = retrieveNode(filePath.substring(0, filePath.lastIndexOf("\\")));
+		if (filePath.contains("\\\\")) //This code fixes an oversight that arises when top-level nodes are assigned for deletion
+			filePath = filePath.replace("\\\\", "\\");
+		Node targetNode = retrieveNode(filePath); //get the node object associated with the specified filePath
+		Node parentOfTargetNode = retrieveNode(filePath.substring(0, filePath.lastIndexOf("\\"))); //get the parent of the target node
 		
 		Node[] childNodes = parentOfTargetNode.getChildren();
 		ArrayList<Node> nodeList = new ArrayList<Node>(); //Build a list of all nodes that are siblings of the parent node
@@ -36,23 +37,22 @@ public class DirectoryTree extends AbstractDirectoryTree {
 				
 			parentOfTargetNode.setChildren(newNodeList); //parent now has the same children as before, minus the target node
 			File f = new File(targetNode.getPath()); //Create a file object pointing to the specified node
+			
 			if (f.exists())
 			{
-				delete(f);
-				System.out.println("Deleted " + targetNode.getPath());
-
+				delete(f); //ask the user's operating system to delete the file
+				return true;
 			}
-			else
-				System.out.println("Cannot find file " + f.getAbsolutePath());
-				/**
-				 * TEST CODE
-				 */
-			return true;
 		}
 		return false;
 	}
 	
-	void delete(File f) {
+	/**
+	 * Private helper method. Java only allows the deletion of directories that are empty. This recursive method iterates through the 
+	 * children of any specified folder and deletes all subfiles
+	 * @param f
+	 */
+	private void delete(File f) {
 		  if (f.isDirectory()) {
 		    for (File c : f.listFiles())
 		    {
@@ -80,6 +80,9 @@ public class DirectoryTree extends AbstractDirectoryTree {
 		scan.start();
 	}
 	
+	/**
+	 * Interrupts the scanning process
+	 */
 	public void stopBuild(){		
 		scan.interrupt();
 		built=true;		
@@ -91,16 +94,16 @@ public class DirectoryTree extends AbstractDirectoryTree {
 	}
 	
 	/**
-	 * Helper method
+	 * Recursive helper method for retreiving a node
 	 * @param n
 	 */
 	private Node retrieveNode(Node current, String nodePath)
 	{
-		if(nodePath.equals("")){
+		if(nodePath.equals("") || nodePath.length() <=2){ //dealing with a root node
 			return root;
 		}
 		
-		else if (!nodePath.contains("\\"))
+		else if (!nodePath.contains("\\")) //dealing with a top-tier node. Find it by searching among the children of the current root
 		{
 			Node[] children = current.getChildren();
 			if (children != null)
@@ -111,7 +114,7 @@ public class DirectoryTree extends AbstractDirectoryTree {
 			}
 		}
 		
-		else
+		else //dealing with a deep node. Traverse down the tree from the root node until it is found
 		{
 			String[] nodePath_split = nodePath.split("\\\\");
 			Node[] children = current.getChildren();
@@ -130,9 +133,12 @@ public class DirectoryTree extends AbstractDirectoryTree {
 
 	}
 	
+	/**
+	 * Private recursive method that does the scanning necessary for building the tree
+	 * @param n
+	 */
 	private void scan(Node n)
 	{
-		//System.out.println("Scanning " + n.getPath());
 		Node[] childNodes = getChildNodes(n);
 		totalSize += n.getSize();
 		
@@ -150,6 +156,11 @@ public class DirectoryTree extends AbstractDirectoryTree {
 		}
 	}
 	
+	/**
+	 * Scanning happens in its own thread to prevent the UI from locking up. 
+	 * @author Peter Pretorius
+	 *
+	 */
 	private class ScanTask extends Thread
 	{
 		public void run()

@@ -72,7 +72,7 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 
 		File[] subFiles = nodeFile.listFiles();
 
-		if (subFiles != null) //happens with some system folders
+		if (subFiles != null) //happens with some protected system folders
 		{
 			Node[] nodeList = new Node[subFiles.length];
 
@@ -125,9 +125,14 @@ public abstract class AbstractDirectoryTree implements IDirectoryTree {
 	public void recalculateSizes()
 	{
 		totalSize = recalculateSize(root);
-		System.out.println("Total size: " + totalSize);		
 	}
 	
+	/**
+	 * Recalculates the sizes of all nodes by summing the sizes of their child nodes. This is required since Java doesn't automatically
+	 * determine the sizes of folders
+	 * @param n
+	 * @return
+	 */
 	private long recalculateSize(Node n)
 	{
 		long size = n.getSize();

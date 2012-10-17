@@ -19,7 +19,11 @@ public class PartitionSelectionPanel extends JPanel implements ActionListener {
 	/**
 	 * The list of buttons in the panel, one for each found partition
 	 */
-	private JButton[] partitionButtons;	 
+	private JButton[] partitionButtons;
+	
+	/**
+	 * Header string found at the top of the selection panel
+	 */
 	private JLabel header;
 	
 	public PartitionSelectionPanel(File[] partitions)
@@ -31,7 +35,7 @@ public class PartitionSelectionPanel extends JPanel implements ActionListener {
 		
 		partitionButtons = new JButton[partitions.length];
 		
-		for (int i = 0; i < partitions.length; i++)
+		for (int i = 0; i < partitions.length; i++) //generate partition buttons
 		{
 			partitionButtons[i] = new JButton(partitions[i].getAbsolutePath());
 			partitionButtons[i].addActionListener(this);
@@ -42,7 +46,7 @@ public class PartitionSelectionPanel extends JPanel implements ActionListener {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		for (int i = 0; i < partitionButtons.length; i++)
+		for (int i = 0; i < partitionButtons.length; i++) //when a partition button is clicked, it notifies the information bar
 			if (partitionButtons[i].equals(e.getSource()))				
 				InformationBar.notify(partitionButtons[i].getLabel(), i);
 		
