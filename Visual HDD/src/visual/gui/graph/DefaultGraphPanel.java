@@ -3,8 +3,10 @@ package visual.gui.graph;
 import java.io.File;
 
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -71,10 +73,22 @@ public class DefaultGraphPanel extends JPanel implements ChartMouseListener {
 					" - The location is a file and not a directory.\n" +
 					" - The area you have clicked on is not a valid scanning area.", "Bottom level", JOptionPane.ERROR_MESSAGE);
 		}
-		
-		chart.setPopupMenu(null);
-		chart.addChartMouseListener(this);
 		removeAll();
+		
+		JPopupMenu popup = chart.getPopupMenu();
+		popup.removeAll();
+		JMenuItem menu;
+		menu = new JMenuItem("Back");
+		popup.add(menu);
+		menu = new JMenuItem("Delete");
+		popup.add(menu);
+		
+//		menu.addActionListener(new ActionListener(){
+//			  public void actionPerformed(ActionEvent e){}
+//			  });
+		
+		chart.setPopupMenu(popup);
+		chart.addChartMouseListener(this);
 		add(chart);
 	}
 	

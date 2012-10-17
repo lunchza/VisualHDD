@@ -1,10 +1,12 @@
 package visual.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -24,7 +26,7 @@ public class ProgramWindow extends JFrame {
 	private static boolean scanning; //keeps track of whether or not a scan is currently in progress
 	private static boolean canceled = false;
 	private JButton infoPanel;
-	private int scanPartition = 0;
+	private JButton backButton;
 	private Node currentNode;
 	private static final long serialVersionUID = 1L;
 	
@@ -46,8 +48,12 @@ public class ProgramWindow extends JFrame {
 	 */
 	private void init(File[] partitions)
 	{
+		/*
+		 * Initialise and set menu bar for this frame
+		 */
 		menuBar = new MenuBar();
 		setJMenuBar(menuBar);
+
 		menuBar.addComponentListener(new ComponentListener() {		
 			
 			public void componentShown(ComponentEvent e) {}			
@@ -57,18 +63,42 @@ public class ProgramWindow extends JFrame {
 				if(scanning!=true && canceled==false){					
 					((InformationBar) infoPanel).update();
 					((InformationBar) infoPanel).actionPerformed();
-					((DefaultGraphPanel) graphPanel).update(currentNode);
 				}				
 			}
 		});
 		
+		/*
+		 * Initialize the graphPanel and center it in the frame
+		 */
 		graphPanel = new DefaultGraphPanel(partitions, currentNode);
 		add(graphPanel, BorderLayout.CENTER);
 		((DefaultGraphPanel) graphPanel).update(currentNode);
 		
-		infoPanel = new InformationBar();
-		add(infoPanel, BorderLayout.NORTH);
+		/*
+		 * The northern-most components are kept in an innder panel with no layout. This allowed for precise component positioning for
+		 * the panel
+		 */
+		JPanel northPanel = new JPanel();
+		northPanel.setPreferredSize(new Dimension(640, 100));
+		northPanel.setLayout(null);
 		
+		backButton = new JButton(new ImageIcon("back.gif"));
+		backButton.setBounds(0, 0, 95, 95);
+		
+		infoPanel = new InformationBar();
+		infoPanel.setBounds(100, 0, 680, 100);
+		
+		/*
+		 * Add components to North panel
+		 */
+		northPanel.add(infoPanel);
+		northPanel.add(backButton);
+		
+		add(northPanel, BorderLayout.NORTH);
+		
+		/*
+		 * Initialise the partition button panel and sets up appropriate listeners for it
+		 */
 		partitionPanel = new PartitionSelectionPanel(partitions);
 		partitionPanel.addComponentListener(new ComponentListener() {		
 			
@@ -78,16 +108,21 @@ public class ProgramWindow extends JFrame {
 			public void componentHidden(ComponentEvent e) {				
 				if(scanning!=true){					
 					((InformationBar) infoPanel).update();
-					((DefaultGraphPanel) graphPanel).update(currentNode);
 				}
 			}
 		});
 		
 		add(partitionPanel, BorderLayout.WEST);		
-			
+		
+	
+		
 		scanning = false;
 	}
 	
+	
+	/**
+	 * Allows for changing of the current status of scanning, which subsequently updates the Information bar and Graph Panel
+	 */
 	public void setScanStatus(boolean b) {
 		if (scanning = b == true)
 		{			
@@ -98,7 +133,6 @@ public class ProgramWindow extends JFrame {
 		{
 			scanning = false;
 			((InformationBar) infoPanel).update();
-			((DefaultGraphPanel) graphPanel).update(currentNode);			
 		}
 		
 		else
@@ -108,7 +142,7 @@ public class ProgramWindow extends JFrame {
 			((DefaultGraphPanel) graphPanel).update(currentNode);
 		}
 	}
-	
+
 	public void setCanceled(boolean value){		
 		canceled = value;
 		

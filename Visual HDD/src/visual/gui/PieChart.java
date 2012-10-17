@@ -26,6 +26,9 @@ public class PieChart extends JPanel {
         plot.setStartAngle(180);
         plot.setDirection(Rotation.CLOCKWISE);
         plot.setForegroundAlpha(0.5f);
+        plot.setLabelGap(0.02);
+        plot.setLabelOutlinePaint(null);
+        plot.setLabelShadowPaint(null);
         return new ChartPanel(chart);
     }
 }

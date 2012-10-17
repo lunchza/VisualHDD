@@ -2,7 +2,6 @@ package visual.main;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.swing.JOptionPane;
 
@@ -35,15 +34,6 @@ public class VisualHDD {
 
 	private VisualHDD()
 	{
-		/*
-		ArrayList<File> rootsTemp = new ArrayList<File>(Arrays.asList(getAvailableSystemPartitions())); //get all top-level folders/partitions
-		ArrayList<File> temp = new ArrayList<File>();
-		
-		for(int i=0;i<rootsTemp.size();i++){
-			System.out.println(rootsTemp.get(i).getAbsolutePath() + ": " + rootsTemp.get(i).getTotalSpace());
-			if(rootsTemp.get(i).getTotalSpace()>0)
-				temp.add(rootsTemp.get(i));			
-		}*/
 		File[] roots = getAvailableSystemPartitions();
 		
 		partitionTrees = new DirectoryTree[roots.length]; //need 1 DirectoryTree for each partition
